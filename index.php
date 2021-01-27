@@ -16,38 +16,54 @@ declare(strict_types=1);
 
 require __DIR__ . '/vendor/autoload.php';
 
-class ClasseConversao {
+<?php
+	class exchange {
 		public function ConverterValores(){
-			//return "teste";
-			$amount = 0;
-	
-			$rate = 0;
-
-			$simbolo = "";
+			$valid = true;
+			//CHECAR SE OS PARAMETROS FORAM PASSADOS
+			if ( !isset($_GET['parametros']) ) $valid = false;
 			
-			$to = "";
+			$ar = explode("/", $_GET['parametros']);
 			
-			if (isset($_GET['amount'])){
-				$amount = $_GET['amount'];                          //Parâmetro - Quantia	
+			//CHECAR SE FORAM PASSADOS 4 PARAMETROS
+			if ( count($ar) != 4 ) $valid = false;
+			
+			//CARREGAR OS PARAMETROS NAS VARIÁVEIS
+			$amount	= $ar[0];
+			$from 	= $ar[1];
+			$to 	= $ar[2];
+			$rate 	= $ar[3];
+			
+			//VALIDAR VALORES
+			if ( !is_numeric($amount) ) $valid = false;
+			if ( !is_numeric($rate) ) $valid = false;
+			if ( strlen($from) != 3 ) $valid = false;
+			if ( strlen($to) != 3 ) $valid = false;
+			
+			//PARAMETROS INVÁLIDOS: TERMINAR A EXECUÇÃO
+			if ( !$valid ) {
+				echo '400';
+				return;
 			}
-			if (isset($_GET['rate'])){
-				$rate = $_GET['rate'];                              //Parâmetro - Moeda de desejada
-			}
-
-			$total = $amount * $rate;                           //Parâmetro - Taxa da moeda desejada
-			$total = number_format($total, 2, ',', '.');        //Parâmetro - Resultado
-            $simbolo = '-';                                     //Parâmetro - Símbolo da moeda desejado
 			
-			switch( $to ){
-				case 'USD':
-					$simbolo = '$';
-					break;
-				case 'BRL':
-					$simbolo = 'R$';
-					break;
-				case 'EUR':
-					$simbolo = '€';
-					break;
+			//CALCULAR O TOTAL
+			$total = $amount * $rate;
+			$total = number_format($total, 2, ',', '.');
+			
+			//DEFINIR SÍMBOLO DA MOEDA
+			$simbolo = '-';
+			if ( $to != "" ) {
+				switch( $to ){
+					case 'USD':
+						$simbolo = '$';
+						break;
+					case 'BRL':
+						$simbolo = 'R$';
+						break;
+					case 'EUR':
+						$simbolo = '€';
+						break;
+				}
 			}
 
 			$vetor = array(
@@ -59,10 +75,8 @@ class ClasseConversao {
 		}
 	}
 	
-	$fred = new ClasseConversao();
+	$obj_exchange = new exchange();
 	
-	$meu_json = $fred->ConverterValores();
+	$meu_json = $obj_exchange->ConverterValores();
 ?>
-	<pre>
-		<?php var_dump($meu_json); ?>
-	</pre>
+<?php echo $meu_json; ?>
